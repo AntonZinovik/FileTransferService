@@ -1,5 +1,9 @@
 using System.Reflection;
 
+using FileTransferService.Options;
+using FileTransferService.Services.Implementations;
+using FileTransferService.Services.Interfaces;
+
 using Microsoft.OpenApi.Models;
 
 using Serilog;
@@ -11,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -25,8 +30,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom
-    .Configuration(context.Configuration));
+                                                                 .Configuration(context.Configuration));
 
+builder.Services.Configure<FilesOptions>(builder.Configuration.GetSection("FileOptions"));
+
+builder.Services.AddTransient<IFileService, FileService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
