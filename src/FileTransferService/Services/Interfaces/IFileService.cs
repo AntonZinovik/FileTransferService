@@ -10,5 +10,5 @@ public interface IFileService
     /// </summary>
     /// <param name="filePath">Путь до файла.</param>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
-    Task SplitFile(string filePath, CancellationToken cancellationToken);
+    Task SplitFileAsync(string filePath, CancellationToken cancellationToken);
 }

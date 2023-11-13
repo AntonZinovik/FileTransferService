@@ -28,11 +28,17 @@ public class FileService : IFileService
     public FileService(ILogger<FileService> logger, IOptions<FilesOptions> splitOptions)
     {
         _logger = logger;
+
         _filesOptions = splitOptions.Value;
+
+        if (string.IsNullOrEmpty(_filesOptions.PathChunkDirectory) || _filesOptions.BufferSize == 0)
+        {
+            throw new ArgumentNullException("Указанны некоректные настройки файлов");
+        }
     }
 
-    /// <inheritdoc cref="IFileService.SplitFile"/>
-    public async Task SplitFile(string filePath, CancellationToken cancellationToken)
+    /// <inheritdoc cref="IFileService.SplitFileAsync"/>
+    public async Task SplitFileAsync(string filePath, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Процесс разделения файла на части начался");
 
@@ -56,7 +62,8 @@ public class FileService : IFileService
 
             await using var targetStream = File.Create(nameChunkFile);
             await using var compressionStream = new GZipStream(targetStream, CompressionMode.Compress);
-            await compressionStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+            var memory = buffer.AsMemory(0, bytesRead);
+            await compressionStream.WriteAsync(memory, cancellationToken);
         }
 
         _logger.LogInformation("Процесс разделения файла успешно завершен");

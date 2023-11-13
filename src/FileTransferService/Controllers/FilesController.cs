@@ -5,11 +5,11 @@ using FileTransferService.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
-/// Котроллер для работы с файлом.
+/// Котроллер для работы с файлами.
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class FileController : ControllerBase
+public class FilesController : ControllerBase
 {
     /// <inheritdoc cref="IFileService"/>
     private readonly IFileService _fileService;
@@ -17,25 +17,25 @@ public class FileController : ControllerBase
     /// <summary>
     /// Логгер.
     /// </summary>
-    private readonly ILogger<FileController> _logger;
+    private readonly ILogger<FilesController> _logger;
 
-    /// <inheritdoc cref="FileController"/>
+    /// <inheritdoc cref="FilesController"/>
     /// <param name="logger">Логгер.</param>
     /// <param name="fileService">Сервис для работ с файлом.</param>
-    public FileController(ILogger<FileController> logger, IFileService fileService)
+    public FilesController(ILogger<FilesController> logger, IFileService fileService)
     {
         _logger = logger;
         _fileService = fileService;
     }
 
     /// <summary>
-    /// Разделеие файла на части.
+    /// Разделение файла на части.
     /// </summary>
-    /// <param name="filePath">Логгер.</param>
+    /// <param name="filePath">Путь до файла.</param>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
     /// <exception cref="ArgumentNullException">Когда путь до файла оказался пустым.</exception>
     /// <response code="204">Когда удалось разделить файл.</response>
-    [HttpPost("File")]
+    [HttpPost("Split")]
     public async Task<NoContentResult> SplitFile([FromBody] string filePath,
         CancellationToken cancellationToken = default)
     {
@@ -43,11 +43,11 @@ public class FileController : ControllerBase
 
         if (string.IsNullOrEmpty(filePath))
         {
-            throw new ArgumentNullException(filePath);
+            throw new ArgumentNullException(filePath, "Параметр не корректный");
         }
 
         _logger.LogInformation("Передан корректный путь до файла");
-        await _fileService.SplitFile(filePath, cancellationToken);
+        await _fileService.SplitFileAsync(filePath, cancellationToken);
 
         return NoContent();
     }
