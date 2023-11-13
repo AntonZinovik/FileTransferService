@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 [Route("[controller]")]
 public class FileController : ControllerBase
 {
+    /// <inheritdoc cref="IFileService"/>
     private readonly IFileService _fileService;
 
     /// <summary>
@@ -19,6 +20,8 @@ public class FileController : ControllerBase
     private readonly ILogger<FileController> _logger;
 
     /// <inheritdoc cref="FileController"/>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="fileService">Сервис для работ с файлом.</param>
     public FileController(ILogger<FileController> logger, IFileService fileService)
     {
         _logger = logger;

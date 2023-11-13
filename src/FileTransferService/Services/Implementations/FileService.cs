@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 public class FileService : IFileService
 {
     /// <summary>
-    /// Опции разделения.
+    /// Настройки файлов.
     /// </summary>
     private readonly FilesOptions _filesOptions;
 
@@ -24,7 +24,7 @@ public class FileService : IFileService
 
     /// <inheritdoc cref="IFileService"/>
     /// <param name="logger">Логгер.</param>
-    /// <param name="splitOptions">Опции разделения.</param>
+    /// <param name="splitOptions">Настройки файлов.</param>
     public FileService(ILogger<FileService> logger, IOptions<FilesOptions> splitOptions)
     {
         _logger = logger;
