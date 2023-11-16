@@ -42,14 +42,14 @@ public class ExceptionHandlingMiddleware
             await HandleExceptionAsync(httpContext,
                 exception.Message,
                 HttpStatusCode.NotFound,
-                "The specified file was not found");
+                "Указанный файл не найден");
         }
         catch (Exception exception)
         {
             await HandleExceptionAsync(httpContext,
                 exception.Message,
                 HttpStatusCode.InternalServerError,
-                "Internal server error");
+                "Внутренняя ошибка сервера");
         }
     }
 
@@ -57,9 +57,9 @@ public class ExceptionHandlingMiddleware
     ///  Метод обработки исключений.
     /// </summary>
     /// <param name="httpContext">HttpContext запроса.</param>
-    /// <param name="exceptionMessage">Сообщения ошибки для логгера.</param>
+    /// <param name="exceptionMessage">Сообщение ошибки для логгера.</param>
     /// <param name="httpStatusCode">Статус код.</param>
-    /// <param name="message">Сообщение ошибки.</param>
+    /// <param name="message">Сообщение ошибки отображаемое пользователю.</param>
     private async Task HandleExceptionAsync(HttpContext httpContext, string exceptionMessage,
         HttpStatusCode httpStatusCode, string message)
     {
@@ -68,7 +68,7 @@ public class ExceptionHandlingMiddleware
         var response = httpContext.Response;
 
         response.ContentType = "application/json";
-        response.StatusCode = (int) httpStatusCode;
+        response.StatusCode = (int)httpStatusCode;
 
         var result = JsonSerializer.Serialize(new
         {
