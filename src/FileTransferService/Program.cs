@@ -1,5 +1,6 @@
 using System.Reflection;
 
+using FileTransferService.Middlewares;
 using FileTransferService.Options;
 using FileTransferService.Services.Implementations;
 using FileTransferService.Services.Interfaces;
@@ -37,6 +38,8 @@ builder.Services.Configure<FilesOptions>(builder.Configuration.GetSection(nameof
 builder.Services.AddTransient<IFileService, FileService>();
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -45,8 +48,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
