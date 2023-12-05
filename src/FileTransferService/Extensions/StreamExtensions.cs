@@ -14,7 +14,8 @@ public static class StreamExtensions
     /// <returns>Хэш-сумма.</returns>
     public static async Task<byte[]> CalculationHashCodeAsync(this Stream stream)
     {
-        var hashData = await SHA512.HashDataAsync(stream);
+        stream.Position = 0;
+        var hashData = await SHA1.HashDataAsync(stream);
         return hashData;
     }
 }
