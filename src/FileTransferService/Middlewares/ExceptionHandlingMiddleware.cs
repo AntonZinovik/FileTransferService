@@ -46,12 +46,12 @@ public class ExceptionHandlingMiddleware
                 HttpStatusCode.NotFound,
                 "Указанный файл не найден");
         }
-        catch (HashCodeException exception)
+        catch (ExternalSystemException exception)
         {
             await HandleExceptionAsync(httpContext,
                 exception.Message,
                 HttpStatusCode.BadRequest,
-                "Хэш-суммы файлов не равны.");
+                "Ошибка внешней системы.");
         }
         catch (Exception exception)
         {
@@ -82,9 +82,9 @@ public class ExceptionHandlingMiddleware
         var result = JsonSerializer.Serialize(new
         {
             StatusCode = (int)httpStatusCode,
-            ErrorMessage = message
+            Message = message
         });
 
-        await response.WriteAsJsonAsync(result);
+        await response.WriteAsync(result);
     }
 }

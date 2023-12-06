@@ -57,6 +57,13 @@ public class FileService : IFileService
 
         _logger.LogInformation("Отправлен запрос на объединение чанков файла:{FileName}", fileName);
         var response = await _httpClient.PostAsJsonAsync("/Files/Merge", dto, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var exception = await response.GetExceptions(cancellationToken);
+            throw exception!;
+        }
+
         response.EnsureSuccessStatusCode();
     }
 

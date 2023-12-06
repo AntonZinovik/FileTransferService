@@ -1,4 +1,3 @@
-using System.Net;
 using System.Reflection;
 
 using FileTransferService.Extensions;
@@ -8,9 +7,6 @@ using FileTransferService.Services.Implementations;
 using FileTransferService.Services.Interfaces;
 
 using Microsoft.OpenApi.Models;
-
-using Polly;
-using Polly.Extensions.Http;
 
 using Serilog;
 
@@ -60,12 +56,3 @@ app.UseSerilogRequestLogging();
 app.MapControllers();
 
 app.Run();
-
-static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-{
-    return HttpPolicyExtensions
-           .HandleTransientHttpError()
-           .OrResult(msg => msg.StatusCode == HttpStatusCode.NotFound)
-           .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2,
-               retryAttempt)));
-}
