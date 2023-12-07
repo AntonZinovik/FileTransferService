@@ -63,7 +63,7 @@ public class ExceptionHandlingMiddleware
     }
 
     /// <summary>
-    ///  Метод обработки исключений.
+    /// Метод обработки исключений.
     /// </summary>
     /// <param name="httpContext">HttpContext запроса.</param>
     /// <param name="exceptionMessage">Сообщение ошибки для логгера.</param>

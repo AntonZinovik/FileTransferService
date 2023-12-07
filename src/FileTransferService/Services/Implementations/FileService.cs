@@ -31,6 +31,7 @@ public class FileService : IFileService
     /// <param name="logger">Логгер.</param>
     /// <param name="splitOptions">Настройки файлов.</param>
     /// <param name="httpClient">Http клиент.</param>
+    /// <exception cref="ArgumentNullException">Когда указанны некоректные настройки файлов.</exception>
     public FileService(ILogger<FileService> logger, IOptions<FilesOptions> splitOptions, HttpClient httpClient)
     {
         _logger = logger;
@@ -42,7 +43,7 @@ public class FileService : IFileService
 
         if (string.IsNullOrEmpty(_filesOptions.PathChunkDirectory) || _filesOptions.BufferSize == 0)
         {
-            throw new ArgumentNullException("Указанны некоректные настройки файлов");
+            throw new ArgumentNullException(_filesOptions.ToString(), "Указанны некоректные настройки файлов");
         }
     }
 
@@ -83,17 +84,9 @@ public class FileService : IFileService
 
         foreach (var chunk in chunks)
         {
-            var httpResponseMessage = await Task.Factory.StartNew(async () =>
-            {
-                await using var sourceStream = new FileStream(chunk, FileMode.OpenOrCreate);
-                using var reader = new BinaryReader(sourceStream, Encoding.UTF8, true);
-                var bytes = reader.ReadBytes((int)sourceStream.Length);
-                var hashCode = await sourceStream.CalculationHashCodeAsync();
-                var dto = new ChunkDto(Path.GetFileName(chunk), bytes, hashCode);
-
-                var httpResponseMessage = await _httpClient.PostAsJsonAsync("/Files/Save", dto, cancellationToken);
-                return httpResponseMessage;
-            }, cancellationToken);
+            var httpResponseMessage =
+                await Task.Factory.StartNew(async () => await SendChunkAsync(chunk, cancellationToken),
+                    cancellationToken);
 
             if (!httpResponseMessage.Result.IsSuccessStatusCode)
             {
@@ -139,5 +132,23 @@ public class FileService : IFileService
         }
 
         _logger.LogInformation("Процесс разделения файла успешно завершен");
+    }
+
+    /// <summary>
+    /// Отправить часть файла.
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
+    /// <param name="chunk">Часть файла</param>
+    /// <returns>Http сообщение.</returns>
+    private async Task<HttpResponseMessage> SendChunkAsync(string chunk, CancellationToken cancellationToken)
+    {
+        await using var sourceStream = new FileStream(chunk, FileMode.OpenOrCreate);
+        using var reader = new BinaryReader(sourceStream, Encoding.UTF8, true);
+        var bytes = reader.ReadBytes((int)sourceStream.Length);
+        var hashCode = await sourceStream.CalculationHashCodeAsync();
+        var dto = new ChunkDto(Path.GetFileName(chunk), bytes, hashCode);
+
+        var httpResponseMessage = await _httpClient.PostAsJsonAsync("/Files/Save", dto, cancellationToken);
+        return httpResponseMessage;
     }
 }
