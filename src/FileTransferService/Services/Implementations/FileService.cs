@@ -20,6 +20,9 @@ public class FileService : IFileService
     /// </summary>
     private readonly FilesOptions _filesOptions;
 
+    /// <summary>
+    /// <inheritdoc cref="HttpClient"/>
+    /// </summary>
     private readonly HttpClient _httpClient;
 
     /// <summary>
@@ -35,15 +38,13 @@ public class FileService : IFileService
     public FileService(ILogger<FileService> logger, IOptions<FilesOptions> splitOptions, HttpClient httpClient)
     {
         _logger = logger;
-
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("http://localhost:5193");
-
         _filesOptions = splitOptions.Value;
 
-        if (string.IsNullOrEmpty(_filesOptions.PathChunkDirectory) || _filesOptions.BufferSize == 0)
+        if (string.IsNullOrEmpty(_filesOptions.PathChunkDirectory) || _filesOptions.BufferSize is 0)
         {
-            throw new ArgumentNullException(_filesOptions.ToString(), "Указанны некоректные настройки файлов");
+            _logger.LogError("Указанны некоректные настройки файлов: {FilesOptions}",_filesOptions);
+            throw new ArgumentNullException("Указанны некоректные настройки файлов");
         }
     }
 
@@ -61,11 +62,9 @@ public class FileService : IFileService
 
         if (!response.IsSuccessStatusCode)
         {
-            var exception = await response.GetExceptions(cancellationToken);
+            var exception = await response.GetExceptionsAsync(cancellationToken);
             throw exception!;
         }
-
-        response.EnsureSuccessStatusCode();
     }
 
     /// <inheritdoc cref="IFileService.SendFileAsync"/>
@@ -80,7 +79,7 @@ public class FileService : IFileService
 
         // Сортируем все чанки в правильном порядке
         var chunks = Directory.GetFiles(directory)
-                              .OrderBy(x => int.Parse(Path.GetFileNameWithoutExtension(x)));
+                              .OrderBy(chunk => int.Parse(Path.GetFileNameWithoutExtension(chunk)));
 
         foreach (var chunk in chunks)
         {
@@ -92,8 +91,6 @@ public class FileService : IFileService
             {
                 File.Delete(chunk);
             }
-
-            httpResponseMessage.Result.EnsureSuccessStatusCode();
         }
     }
 
@@ -138,17 +135,19 @@ public class FileService : IFileService
     /// Отправить часть файла.
     /// </summary>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
-    /// <param name="chunk">Часть файла</param>
+    /// <param name="chunkPath">Путь до части файла.</param>
     /// <returns>Http сообщение.</returns>
-    private async Task<HttpResponseMessage> SendChunkAsync(string chunk, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> SendChunkAsync(string chunkPath, CancellationToken cancellationToken)
     {
-        await using var sourceStream = new FileStream(chunk, FileMode.OpenOrCreate);
+        await using var sourceStream = new FileStream(chunkPath, FileMode.OpenOrCreate);
         using var reader = new BinaryReader(sourceStream, Encoding.UTF8, true);
         var bytes = reader.ReadBytes((int)sourceStream.Length);
         var hashCode = await sourceStream.CalculationHashCodeAsync();
-        var dto = new ChunkDto(Path.GetFileName(chunk), bytes, hashCode);
+        var dto = new ChunkDto(Path.GetFileName(chunkPath), bytes, hashCode);
 
         var httpResponseMessage = await _httpClient.PostAsJsonAsync("/Files/Save", dto, cancellationToken);
+        httpResponseMessage.EnsureSuccessStatusCode();
+        
         return httpResponseMessage;
     }
 }

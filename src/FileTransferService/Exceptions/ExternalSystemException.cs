@@ -3,7 +3,6 @@
 /// <summary>
 /// Класс ошибки внешней системы.
 /// </summary>
-[Serializable]
 public class ExternalSystemException : Exception
 {
     /// <summary>
@@ -20,7 +19,7 @@ public class ExternalSystemException : Exception
     /// <inheritdoc cref="ExternalSystemException"/>
     /// </summary>
     /// <param name="message">Сообщение ошибки.</param>
-    /// <param name="inner">Ошибка.</param>
+    /// <param name="inner">Внутренняя ошибка.</param>
     public ExternalSystemException(string message, Exception inner)
         : base(message, inner)
     {
@@ -30,5 +29,5 @@ public class ExternalSystemException : Exception
     /// <summary>
     /// Сообщение ошибки.
     /// </summary>
-    public new string Message { get; set; }
+    public new string Message { get; init; }
 }

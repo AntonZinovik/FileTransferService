@@ -36,7 +36,7 @@ public class FilesController : ControllerBase
     /// <exception cref="ArgumentNullException">Когда путь до файла оказался пустым.</exception>
     /// <response code="204">Когда удалось объединить файл.</response>
     [HttpPost("Merge")]
-    public async Task<NoContentResult> MergeFiles([FromBody] string filePath,
+    public async Task<NoContentResult> MergeFilesAsync([FromBody] string filePath,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -60,7 +60,7 @@ public class FilesController : ControllerBase
     /// <exception cref="ArgumentNullException">Когда имя файла оказалось пустым.</exception>
     /// <response code="204">Когда удалось отправить части файла.</response>
     [HttpPost("Send")]
-    public async Task<NoContentResult> SendChunkFiles([FromBody] string fileName,
+    public async Task<NoContentResult> SendFileChunksAsync([FromBody] string fileName,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -84,7 +84,7 @@ public class FilesController : ControllerBase
     /// <exception cref="ArgumentNullException">Когда путь до файла оказался пустым.</exception>
     /// <response code="204">Когда удалось разделить файл.</response>
     [HttpPost("Split")]
-    public async Task<NoContentResult> SplitFile([FromBody] string filePath,
+    public async Task<NoContentResult> SplitFileAsync([FromBody] string filePath,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

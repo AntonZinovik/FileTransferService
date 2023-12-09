@@ -13,7 +13,7 @@ public static class PoliciesHttpClientBuilderExtensions
     /// <summary>
     /// Добавление политики повторных запросов.
     /// </summary>
-    /// <param name="clientBuilder">Настраевыемый HttpClient конструктор.</param>
+    /// <param name="clientBuilder">Строитель http клиентов.</param>
     public static void AddRetryPolicy(this IHttpClientBuilder clientBuilder)
     {
         var delay = Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(2), 5);

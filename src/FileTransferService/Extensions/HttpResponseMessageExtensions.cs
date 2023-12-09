@@ -7,19 +7,20 @@ using FileTransferService.Exceptions;
 /// <summary>
 /// Расширение для HttpResponseMessage.
 /// </summary>
-public static class ResponseExtension
+public static class HttpResponseMessageExtensions
 {
     /// <summary>
     /// Получение ошибок из ответа.
     /// </summary>
     /// <param name="httpResponseMessage">Http ответ.</param>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
-    /// <returns>ExternalSystemException.</returns>
-    public static async Task<ExternalSystemException?> GetExceptions(this HttpResponseMessage httpResponseMessage
+    /// <returns>Ошибка внешней системы.</returns>
+    public static async Task<ExternalSystemException?> GetExceptionsAsync(this HttpResponseMessage httpResponseMessage
         , CancellationToken cancellationToken)
     {
         var exception = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
         var externalSystemException = JsonSerializer.Deserialize<ExternalSystemException>(exception);
+        
         return externalSystemException;
     }
 }

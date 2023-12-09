@@ -38,7 +38,12 @@ builder.Services.Configure<FilesOptions>(builder.Configuration.GetSection(nameof
 
 builder.Services.AddTransient<IFileService, FileService>();
 
-builder.Services.AddHttpClient<IFileService, FileService>().AddRetryPolicy();
+var mergeServiceUri = new Uri(builder.Configuration.GetSection("MergeServiceUri").Value ??
+                              throw new InvalidOperationException("Не корректоно указанMergeServiceUri"));
+
+builder.Services.AddHttpClient<IFileService, FileService>(httpClient =>
+           httpClient.BaseAddress = mergeServiceUri)
+       .AddRetryPolicy();
 
 var app = builder.Build();
 

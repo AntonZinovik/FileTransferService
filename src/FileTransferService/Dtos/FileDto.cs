@@ -4,7 +4,6 @@
 /// Дто отправляемого файла.
 /// </summary>
 /// <param name="FileName">Имя файла.</param>
-/// <param name="Bytes">Отправляемый файл.</param>
 /// <param name="HashCode">Хеш-сумма файла.</param>
 public record FileDto(string FileName, byte[] HashCode)
 {

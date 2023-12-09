@@ -16,6 +16,7 @@ public static class StreamExtensions
     {
         stream.Position = 0;
         var hashData = await SHA1.HashDataAsync(stream);
+        
         return hashData;
     }
 }
