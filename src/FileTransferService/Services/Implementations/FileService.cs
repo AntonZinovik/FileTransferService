@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 public class FileService : IFileService
 {
     /// <summary>
-    /// Настройки файлов.
+    /// <inheritdoc cref="FilesOptions"/>
     /// </summary>
     private readonly FilesOptions _filesOptions;
 
@@ -30,22 +30,24 @@ public class FileService : IFileService
     /// </summary>
     private readonly ILogger<FileService> _logger;
 
+    /// <summary>
+    /// <inheritdoc cref="MergeServiceOptions"/>
+    /// </summary>
+    private readonly MergeServiceOptions _mergeServiceOptions;
+
     /// <inheritdoc cref="IFileService"/>
     /// <param name="logger">Логгер.</param>
     /// <param name="splitOptions">Настройки файлов.</param>
     /// <param name="httpClient">Http клиент.</param>
-    /// <exception cref="ArgumentNullException">Когда указанны некоректные настройки файлов.</exception>
-    public FileService(ILogger<FileService> logger, IOptions<FilesOptions> splitOptions, HttpClient httpClient)
+    /// <param name="mergeServiceOptions">Настройки конечных точек сервиса объединения.</param>
+    /// <exception cref="ArgumentNullException">Когда указанны некорректные настройки файлов.</exception>
+    public FileService(ILogger<FileService> logger, IOptions<FilesOptions> splitOptions, HttpClient httpClient,
+        IOptions<MergeServiceOptions> mergeServiceOptions)
     {
         _logger = logger;
         _httpClient = httpClient;
+        _mergeServiceOptions = mergeServiceOptions.Value;
         _filesOptions = splitOptions.Value;
-
-        if (string.IsNullOrEmpty(_filesOptions.PathChunkDirectory) || _filesOptions.BufferSize is 0)
-        {
-            _logger.LogError("Указанны некоректные настройки файлов: {FilesOptions}",_filesOptions);
-            throw new ArgumentNullException("Указанны некоректные настройки файлов");
-        }
     }
 
     /// <inheritdoc cref="IFileService.MergeFileAsync"/>
@@ -58,13 +60,11 @@ public class FileService : IFileService
         var dto = new FileDto(fileName, hashCode);
 
         _logger.LogInformation("Отправлен запрос на объединение чанков файла:{FileName}", fileName);
-        var response = await _httpClient.PostAsJsonAsync("/Files/Merge", dto, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var exception = await response.GetExceptionsAsync(cancellationToken);
-            throw exception!;
-        }
+        var response =
+            await _httpClient.PostAsJsonAsync(_mergeServiceOptions.MergeFileEndPoint, dto, cancellationToken);
+
+        await response.GetExceptionsAsync(cancellationToken);
     }
 
     /// <inheritdoc cref="IFileService.SendFileAsync"/>
@@ -83,14 +83,8 @@ public class FileService : IFileService
 
         foreach (var chunk in chunks)
         {
-            var httpResponseMessage =
-                await Task.Factory.StartNew(async () => await SendChunkAsync(chunk, cancellationToken),
-                    cancellationToken);
-
-            if (!httpResponseMessage.Result.IsSuccessStatusCode)
-            {
-                File.Delete(chunk);
-            }
+            await Task.Factory.StartNew(async () => await SendChunkAsync(fileName, chunk, cancellationToken),
+                cancellationToken);
         }
     }
 
@@ -135,19 +129,22 @@ public class FileService : IFileService
     /// Отправить часть файла.
     /// </summary>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
+    /// <param name="fileName">Имя файла.</param>
     /// <param name="chunkPath">Путь до части файла.</param>
     /// <returns>Http сообщение.</returns>
-    private async Task<HttpResponseMessage> SendChunkAsync(string chunkPath, CancellationToken cancellationToken)
+    private async Task SendChunkAsync(string fileName, string chunkPath, CancellationToken cancellationToken)
     {
-        await using var sourceStream = new FileStream(chunkPath, FileMode.OpenOrCreate);
+        await using var sourceStream = new FileStream(chunkPath, FileMode.Open);
         using var reader = new BinaryReader(sourceStream, Encoding.UTF8, true);
         var bytes = reader.ReadBytes((int)sourceStream.Length);
         var hashCode = await sourceStream.CalculationHashCodeAsync();
-        var dto = new ChunkDto(Path.GetFileName(chunkPath), bytes, hashCode);
+        var dto = new ChunkDto(fileName, bytes, hashCode, Path.GetFileName(chunkPath));
 
-        var httpResponseMessage = await _httpClient.PostAsJsonAsync("/Files/Save", dto, cancellationToken);
-        httpResponseMessage.EnsureSuccessStatusCode();
-        
-        return httpResponseMessage;
+        var response =
+            await _httpClient.PostAsJsonAsync(_mergeServiceOptions.SaveChunkEndpoint, dto, cancellationToken);
+        await response.GetExceptionsAsync(cancellationToken);
+
+        sourceStream.Close();
+        File.Delete(chunkPath);
     }
 }

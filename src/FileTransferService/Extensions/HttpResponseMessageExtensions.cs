@@ -15,12 +15,17 @@ public static class HttpResponseMessageExtensions
     /// <param name="httpResponseMessage">Http ответ.</param>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
     /// <returns>Ошибка внешней системы.</returns>
-    public static async Task<ExternalSystemException?> GetExceptionsAsync(this HttpResponseMessage httpResponseMessage
+    public static async Task GetExceptionsAsync(this HttpResponseMessage httpResponseMessage
         , CancellationToken cancellationToken)
     {
+        if (httpResponseMessage.IsSuccessStatusCode)
+        {
+            return;
+        }
+
         var exception = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
         var externalSystemException = JsonSerializer.Deserialize<ExternalSystemException>(exception);
-        
-        return externalSystemException;
+
+        throw externalSystemException!;
     }
 }

@@ -43,7 +43,7 @@ public class FilesController : ControllerBase
 
         if (string.IsNullOrEmpty(filePath))
         {
-            throw new ArgumentNullException(filePath, "Параметр не корректный");
+            throw new ArgumentNullException(filePath, "Параметр некорректный");
         }
 
         _logger.LogInformation("Передан корректный путь до файла");
@@ -67,11 +67,11 @@ public class FilesController : ControllerBase
 
         if (string.IsNullOrEmpty(fileName))
         {
-            throw new ArgumentNullException(fileName, "Параметр не корректный");
+            throw new ArgumentNullException(fileName, "Параметр некорректный");
         }
 
         _logger.LogInformation("Передан корректное имя файла");
-        await _fileService.SendFileAsync(fileName, cancellationToken);
+        await _fileService.SendFileAsync(Path.GetFileNameWithoutExtension(fileName), cancellationToken);
 
         return NoContent();
     }
@@ -91,7 +91,7 @@ public class FilesController : ControllerBase
 
         if (string.IsNullOrEmpty(filePath))
         {
-            throw new ArgumentNullException(filePath, "Параметр не корректный");
+            throw new ArgumentNullException(filePath, "Параметр некорректный");
         }
 
         _logger.LogInformation("Передан корректный путь до файла");

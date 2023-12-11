@@ -2,7 +2,6 @@ using System.Reflection;
 
 using FileTransferService.Extensions;
 using FileTransferService.Middlewares;
-using FileTransferService.Options;
 using FileTransferService.Services.Implementations;
 using FileTransferService.Services.Interfaces;
 
@@ -34,16 +33,9 @@ builder.Services.AddSwaggerGen(options =>
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom
                                                                  .Configuration(context.Configuration));
 
-builder.Services.Configure<FilesOptions>(builder.Configuration.GetSection(nameof(FileOptions)));
-
+builder.AddOptions();
 builder.Services.AddTransient<IFileService, FileService>();
-
-var mergeServiceUri = new Uri(builder.Configuration.GetSection("MergeServiceUri").Value ??
-                              throw new InvalidOperationException("Не корректоно указанMergeServiceUri"));
-
-builder.Services.AddHttpClient<IFileService, FileService>(httpClient =>
-           httpClient.BaseAddress = mergeServiceUri)
-       .AddRetryPolicy();
+builder.AddHttpClient();
 
 var app = builder.Build();
 

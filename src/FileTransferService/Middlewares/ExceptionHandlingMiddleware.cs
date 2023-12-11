@@ -39,6 +39,13 @@ public class ExceptionHandlingMiddleware
         {
             await _next(httpContext);
         }
+        catch (NullReferenceException exception)
+        {
+            await HandleExceptionAsync(httpContext,
+                exception.Message,
+                HttpStatusCode.NotFound,
+                "Не существует указанной папки");
+        }
         catch (FileNotFoundException exception)
         {
             await HandleExceptionAsync(httpContext,
