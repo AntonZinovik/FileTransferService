@@ -15,7 +15,7 @@ public static class HttpResponseMessageExtensions
     /// <param name="httpResponseMessage">Http ответ.</param>
     /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
     /// <returns>Ошибка внешней системы.</returns>
-    public static async Task GetExceptionsAsync(this HttpResponseMessage httpResponseMessage
+    public static async Task ThrowIfHasExceptionsAsync(this HttpResponseMessage httpResponseMessage
         , CancellationToken cancellationToken)
     {
         if (httpResponseMessage.IsSuccessStatusCode)

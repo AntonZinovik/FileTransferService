@@ -16,8 +16,8 @@ public static class DiExtensions
     /// <exception cref="InvalidOperationException">Когда не указан uri Сервиса объединения.</exception>
     public static void AddHttpClient(this WebApplicationBuilder builder)
     {
-        var mergeServiceUri = new Uri(builder.Configuration.GetSection("MergeServiceUri").Value ??
-                                      throw new InvalidOperationException("Не корректно указан MergeServiceUri"));
+        var mergeServiceHost = builder.Configuration.GetSection(nameof(MergeServiceOptions)).GetSection("MergeServiceHost").Value;
+        var mergeServiceUri = new Uri(mergeServiceHost!);
 
         builder.Services.AddHttpClient<IFileService, FileService>(httpClient =>
                    httpClient.BaseAddress = mergeServiceUri)

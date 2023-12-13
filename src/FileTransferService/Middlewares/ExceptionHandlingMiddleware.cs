@@ -39,7 +39,7 @@ public class ExceptionHandlingMiddleware
         {
             await _next(httpContext);
         }
-        catch (NullReferenceException exception)
+        catch (DirectoryNotFoundException exception)
         {
             await HandleExceptionAsync(httpContext,
                 exception.Message,
