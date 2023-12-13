@@ -1,7 +1,7 @@
 using System.Reflection;
 
+using FileTransferService.Extensions;
 using FileTransferService.Middlewares;
-using FileTransferService.Options;
 using FileTransferService.Services.Implementations;
 using FileTransferService.Services.Interfaces;
 
@@ -33,9 +33,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom
                                                                  .Configuration(context.Configuration));
 
-builder.Services.Configure<FilesOptions>(builder.Configuration.GetSection(nameof(FileOptions)));
-
+builder.AddOptions();
 builder.Services.AddTransient<IFileService, FileService>();
+builder.AddHttpClient();
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();

@@ -3,6 +3,8 @@
 using System.Net;
 using System.Text.Json;
 
+using FileTransferService.Exceptions;
+
 /// <summary>
 ///  Промежуточный слой для обработки ошибок.
 /// </summary>
@@ -37,12 +39,26 @@ public class ExceptionHandlingMiddleware
         {
             await _next(httpContext);
         }
+        catch (DirectoryNotFoundException exception)
+        {
+            await HandleExceptionAsync(httpContext,
+                exception.Message,
+                HttpStatusCode.NotFound,
+                "Не существует указанной папки");
+        }
         catch (FileNotFoundException exception)
         {
             await HandleExceptionAsync(httpContext,
                 exception.Message,
                 HttpStatusCode.NotFound,
                 "Указанный файл не найден");
+        }
+        catch (ExternalSystemException exception)
+        {
+            await HandleExceptionAsync(httpContext,
+                exception.Message,
+                HttpStatusCode.BadRequest,
+                "Ошибка внешней системы.");
         }
         catch (Exception exception)
         {
@@ -54,7 +70,7 @@ public class ExceptionHandlingMiddleware
     }
 
     /// <summary>
-    ///  Метод обработки исключений.
+    /// Метод обработки исключений.
     /// </summary>
     /// <param name="httpContext">HttpContext запроса.</param>
     /// <param name="exceptionMessage">Сообщение ошибки для логгера.</param>
@@ -72,10 +88,10 @@ public class ExceptionHandlingMiddleware
 
         var result = JsonSerializer.Serialize(new
         {
-            StatusCode = (int) httpStatusCode,
-            ErrorMessage = message
+            StatusCode = (int)httpStatusCode,
+            Message = message
         });
 
-        await response.WriteAsJsonAsync(result);
+        await response.WriteAsync(result);
     }
 }

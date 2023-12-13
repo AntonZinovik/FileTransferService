@@ -29,6 +29,54 @@ public class FilesController : ControllerBase
     }
 
     /// <summary>
+    /// Объединение частей файла.
+    /// </summary>
+    /// <param name="filePath">Путь до файла.</param>
+    /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
+    /// <exception cref="ArgumentNullException">Когда путь до файла оказался пустым.</exception>
+    /// <response code="204">Когда удалось объединить файл.</response>
+    [HttpPost("Merge")]
+    public async Task<NoContentResult> MergeFilesAsync([FromBody] string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            throw new ArgumentNullException(filePath, "Параметр некорректный");
+        }
+
+        _logger.LogInformation("Передан корректный путь до файла");
+        await _fileService.MergeFileAsync(filePath, cancellationToken);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Отправка частей файла.
+    /// </summary>
+    /// <param name="fileName">Имя отправляемого файла.</param>
+    /// <param name="cancellationToken">Токен отмены выполнения операции.</param>
+    /// <exception cref="ArgumentNullException">Когда имя файла оказалось пустым.</exception>
+    /// <response code="204">Когда удалось отправить части файла.</response>
+    [HttpPost("Send")]
+    public async Task<NoContentResult> SendFileChunksAsync([FromBody] string fileName,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrEmpty(fileName))
+        {
+            throw new ArgumentNullException(fileName, "Параметр некорректный");
+        }
+
+        _logger.LogInformation("Передан корректное имя файла");
+        await _fileService.SendFileAsync(Path.GetFileNameWithoutExtension(fileName), cancellationToken);
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Разделение файла на части.
     /// </summary>
     /// <param name="filePath">Путь до файла.</param>
@@ -36,14 +84,14 @@ public class FilesController : ControllerBase
     /// <exception cref="ArgumentNullException">Когда путь до файла оказался пустым.</exception>
     /// <response code="204">Когда удалось разделить файл.</response>
     [HttpPost("Split")]
-    public async Task<NoContentResult> SplitFile([FromBody] string filePath,
+    public async Task<NoContentResult> SplitFileAsync([FromBody] string filePath,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (string.IsNullOrEmpty(filePath))
         {
-            throw new ArgumentNullException(filePath, "Параметр не корректный");
+            throw new ArgumentNullException(filePath, "Параметр некорректный");
         }
 
         _logger.LogInformation("Передан корректный путь до файла");
