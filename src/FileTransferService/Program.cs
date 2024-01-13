@@ -1,7 +1,6 @@
 using System.Reflection;
 
 using FileTransferService.Extensions;
-using FileTransferService.Middlewares;
 using FileTransferService.Services.Implementations;
 using FileTransferService.Services.Interfaces;
 
@@ -39,7 +38,7 @@ builder.AddHttpClient();
 
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.AddAppMiddlewares();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
