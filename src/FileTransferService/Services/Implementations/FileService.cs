@@ -54,7 +54,7 @@ public class FileService : IFileService
     public async Task MergeFileAsync(string filePath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         var fileName = Path.GetFileName(filePath);
         await using var fileStream = File.OpenRead(filePath);
         var hashCode = await fileStream.CalculationHashCodeAsync();
@@ -73,9 +73,9 @@ public class FileService : IFileService
     public async Task SendFileAsync(string fileName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         var directory = Path.Combine(_filesOptions.PathChunkDirectory!, fileName);
-        
+
         if (!Directory.Exists(directory))
         {
             throw new DirectoryNotFoundException("Не существует папки с частями указанного файла.");
@@ -96,7 +96,7 @@ public class FileService : IFileService
     public async Task SplitFileAsync(string filePath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         _logger.LogInformation("Процесс разделения файла на части начался");
 
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
@@ -115,7 +115,8 @@ public class FileService : IFileService
         int bytesRead;
         await using var fileStream = File.OpenRead(filePath);
 
-        while ((bytesRead = await fileStream.ReadAsync(buffer, cancellationToken)) > 0 &&!cancellationToken.IsCancellationRequested)
+        while ((bytesRead = await fileStream.ReadAsync(buffer, cancellationToken)) > 0 &&
+               !cancellationToken.IsCancellationRequested)
         {
             chunkNumber++;
 
